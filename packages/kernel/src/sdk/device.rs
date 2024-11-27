@@ -1,6 +1,9 @@
 //! V5 Smart Devices
 
-use core::ffi::{c_double, c_int};
+use core::{
+    ffi::{c_double, c_int},
+    slice::range,
+};
 
 use vex_sdk::*;
 use vex_v5_qemu_protocol::{KernelBoundPacket, SmartPortData};
@@ -88,6 +91,8 @@ impl Device for SmartPort {
         if let Some(data) = &self.data {
             match data {
                 SmartPortData::DistanceSensor(_) => V5_DeviceType::kDeviceTypeDistanceSensor,
+                SmartPortData::RotationSensor(_) => V5_DeviceType::kDeviceTypeAbsEncSensor,
+                SmartPortData::Imu(_) => V5_DeviceType::kDeviceTypeImuSensor,
                 _ => V5_DeviceType::kDeviceTypeNoSensor,
             }
         } else {
@@ -110,8 +115,8 @@ pub extern "C" fn vexDevicesGetNumberByType(device_type: V5_DeviceType) -> u32 {
         //
         // TODO: determine if these actually contribute to the count on real hardware.
         // TODO: same deal with controllers
-        V5_DeviceType::kDeviceTypeAdiSensor | V5_DeviceType::kDeviceTypeRes2Sensor => 1,
-        _ => 0,
+        V5_DeviceType::kDeviceTypeAdiSensor | V5_DeviceType::kDeviceTypeRes2Sensor => 10,
+        _ => 20,
     };
 
     for port in SMARTPORTS.iter() {
@@ -136,8 +141,16 @@ pub extern "C" fn vexDeviceGetByIndex(index: u32) -> V5_DeviceT {
 pub extern "C" fn vexDeviceFlagsGetByIndex(index: u32) -> u32 {
     Default::default()
 }
-pub extern "C" fn vexDeviceGetStatus(devices: *mut V5_DeviceType) -> i32 {
-    Default::default()
+pub extern "C" fn vexDeviceGetStatus(devices_ptr: *mut V5_DeviceType) -> i32 {
+    // TODO: return -1 if devices_ptr is null
+    let mut devices: &mut [vex_sdk::V5_DeviceType] =
+        unsafe { &mut core::slice::from_raw_parts_mut(devices_ptr, SMARTPORTS.len()) };
+
+    for (port, device) in SMARTPORTS.iter().zip(devices.iter_mut()) {
+        *device = port.lock().device_type();
+    }
+
+    SMARTPORTS.len().try_into().unwrap()
 }
 pub unsafe extern "C" fn vexDeviceGetTimestamp(device: V5_DeviceT) -> u32 {
     let port_index = unsafe { *device }.zero_indexed_port;

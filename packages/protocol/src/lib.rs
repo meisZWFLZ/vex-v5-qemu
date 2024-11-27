@@ -8,9 +8,11 @@ use battery::BatteryData;
 use bincode::{Decode, Encode};
 use code_signature::CodeSignature;
 use controller::{ControllerData, ControllerId};
+use rotation_sensor::RotationSensorData;
 use core::{option::Option, num::NonZeroU32};
 use display::{Color, DisplayRenderMode, DrawCommand, ScrollLocation};
 use distance_sensor::DistanceSensorData;
+use imu::ImuData;
 use geometry::Rect;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -21,7 +23,9 @@ pub mod controller;
 pub mod display;
 pub mod distance_sensor;
 pub mod geometry;
+pub mod imu;
 pub mod motor;
+pub mod rotation_sensor;
 
 /// A message sent from the guest to the host.
 #[derive(Debug, Clone, PartialEq, PartialOrd, Encode, Decode)]
@@ -84,6 +88,8 @@ pub enum KernelBoundPacket {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum SmartPortData {
     DistanceSensor(DistanceSensorData),
+    Imu(ImuData),
+    RotationSensor(RotationSensorData)
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Encode, Decode)]

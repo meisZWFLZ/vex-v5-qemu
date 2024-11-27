@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(c_variadic, naked_functions)]
+#![feature(slice_range)]
 
 extern crate alloc;
 

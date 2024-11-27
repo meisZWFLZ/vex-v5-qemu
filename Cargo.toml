@@ -5,7 +5,7 @@ members = [
     "./packages/display",
     "./packages/protocol",
     "./packages/client-cli",
-    "./packages/client/src-tauri",
+    # "./packages/client/src-tauri",
 ]
 resolver = "2"
 
