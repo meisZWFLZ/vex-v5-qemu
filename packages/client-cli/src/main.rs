@@ -215,12 +215,13 @@ async fn main() -> anyhow::Result<()> {
         }
     });
 
-    let _ = tokio::task::block_in_place(move || {
-        let event_loop = EventLoop::new().unwrap();
-        let mut app = DisplayWindow::new(peripherals.display, peripherals.touch, opt.save_imgs);
+    // let _ = tokio::task::block_in_place(move || {
+    //     let event_loop = EventLoop::new().unwrap();
+    //     let mut app = DisplayWindow::new(peripherals.display, peripherals.touch, opt.save_imgs);
 
-        event_loop.run_app(&mut app)
-    });
+    //     event_loop.run_app(&mut app)
+    // });
+    brain.wait_for_exit().await?;
 
     brain.terminate().await?;
 
